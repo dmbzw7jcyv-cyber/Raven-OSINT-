@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Raven — Advanced OSINT Framework | Templar Studios</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0a0a12;
+            --surface: #13131a;
+            --surface-2: #1a1a24;
+            --surface-3: #222230;
+            --border: #262632;
+            --border-light: #333340;
+            --text: #f5f5f7;
+            --text-secondary: #a0a0b0;
+            --text-muted: #6e6e7a;
+            --primary: #9b30ff;
+            --primary-hover: #b060ff;
+            --secondary: #ff1744;
+            --accent-gradient: linear-gradient(135deg, #9b30ff, #ff1744);
+            --success: #00e676;
+            --warning: #ffab00;
+            --danger: #ff1744;
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 20px;
+            --transition: 200ms cubic-bezier(0.4, 0, 0.2, 1);
+            --font-sans: 'Inter', system-ui, sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-sans);
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            min-height: 100vh;
+        }
+
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg); }
+        ::-webkit-scrollbar-thumb { background: var(--border-light); border-radius: 4px; }
+
+        .header {
+            background: rgba(10, 10, 18, 0.9);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--border);
+            padding: 0 1.5rem;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            text-decoration: none;
+        }
+
+        .logo-raven {
+            width: 26px;
+            height: 26px;
+            flex-shrink: 0;
+        }
+
+        .logo-raven svg { width: 100%; height: 100%; }
+
+        .logo-text {
+            font-size: 1.3rem;
+            font-weight: 900;
+            letter-spacing: -0.02em;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header-badge {
+            font-size: 0.65rem;
+            font-weight: 700;
+            color: var(--primary);
+            background: rgba(155, 48, 255, 0.1);
+            border: 1px solid rgba(155, 48, 255, 0.25);
+            padding: 0.3rem 0.7rem;
+            border-radius: 20px;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .hero {
+            text-align: center;
+            padding: 5rem 1.5rem 3rem;
+        }
+
+        .hero-raven {
+            width: 70px;
+            height: 70px;
+            margin: 0 auto 1.5rem;
+        }
+
+        .hero-raven svg {
+            width: 100%;
+            height: 100%;
+            filter: drop-shadow(0 0 30px rgba(155, 48, 255, 0.5));
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            font-weight: 900;
+            letter-spacing: -0.04em;
+            margin-bottom: 0.75rem;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero p {
+            color: var(--text-secondary);
+            font-size: 1.05rem;
+            max-width: 550px;
+            margin: 0 auto;
+        }
+
+        .hero-cta {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .btn-primary {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: var(--accent-gradient);
+            color: #fff;
+            font-weight: 700;
+            font-size: 0.95rem;
+            padding: 0.85rem 1.75rem;
+            border-radius: 25px;
+            text-decoration: none;
+            transition: var(--transition);
+            border: none;
+            cursor: pointer;
+            font-family: var(--font-sans);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 32px rgba(155, 48, 255, 0.4);
+        }
+
+        .btn-secondary {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: var(--surface-2);
+            border: 1px solid var(--border-light);
+            color: var(--text);
+            font-weight: 600;
+            font-size: 0.95rem;
+            padding: 0.85rem 1.75rem;
+            border-radius: 25px;
+            text-decoration: none;
+            transition: var(--transition);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--primary);
+            background: rgba(155, 48, 255, 0.08);
+        }
+
+        .hero-divider {
+            width: 70px;
+            height: 3px;
+            background: var(--accent-gradient);
+            margin: 2rem auto 0;
+            border-radius: 3px;
+            opacity: 0.7;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 2rem 1rem 4rem;
+        }
+
+        .section { margin-bottom: 3rem; }
+
+        .section h2 {
+            font-size: 1.5rem;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            margin-bottom: 0.5rem;
+        }
+
+        .section-divider {
+            width: 40px;
+            height: 3px;
+            background: var(--accent-gradient);
+            border-radius: 3px;
+            margin-bottom: 1rem;
+        }
+
+        .section p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+
+        .download-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .download-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 1.5rem;
+            text-align: center;
+            transition: var(--transition);
+        }
+
+        .download-card:hover {
+            border-color: var(--primary);
+            background: var(--surface-2);
+        }
+
+        .download-card h3 {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .download-card p {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+        }
+
+        .tool-tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .tool-tab {
+            padding: 0.5rem 1.1rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+            font-family: var(--font-sans);
+            transition: var(--transition);
+        }
+
+        .tool-tab:hover {
+            border-color: var(--border-light);
+            color: var(--text);
+        }
+
+        .tool-tab.active {
+            background: rgba(155, 48, 255, 0.1);
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .tool-panel {
+            display: none;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 1.5rem;
+        }
+
+        .tool-panel.active {
+            display: block;
+        }
+
+        .tool-panel h3 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .tool-panel p {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            margin-bottom: 0.75rem;
+        }
+
+        input[type="text"], input[type="password"], input[type="file"], textarea {
+            width: 100%;
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 0.75rem 0.9rem;
+            border-radius: var(--radius-sm);
+            font-size: 0.9rem;
+            outline: none;
+            font-family: var(--font-sans);
+            resize: vertical;
+        }
+
+        input:focus, textarea:focus {
+            border-color: var(--primary);
+        }
+
+        .output {
+            background: #0d0d14;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 0.9rem;
+            margin-top: 0.75rem;
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            color: var(--primary);
+            word-break: break-all;
+            white-space: pre-wrap;
+            min-height: 40px;
+        }
+
+        .output.empty {
+            color: var(--text-muted);
+        }
+
+        .footer {
+            border-top: 1px solid var(--border);
+            padding: 2rem 1rem;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.75rem;
+        }
+
+        .footer a { color: var(--primary); text-decoration: none; }
+
+        @media (max-width: 600px) {
+            .hero h1 { font-size: 2.5rem; }
+            .download-cards { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <svg width="0" height="0" style="position:absolute;">
+        <defs>
+            <linearGradient id="ravenGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#9b30ff"/>
+                <stop offset="100%" stop-color="#ff1744"/>
+            </linearGradient>
+        </defs>
+    </svg>
+
+    <header class="header">
+        <a class="logo" href="#">
+            <span class="logo-raven">
+                <svg viewBox="0 0 24 24" fill="none">
+                    <path d="M4 15 L10 6 L16 6 L22 15 L15 11 L11 11 L8 15 Z" fill="url(#ravenGradient)"/>
+                </svg>
+            </span>
+            <span class="logo-text">Raven</span>
+        </a>
+        <span class="header-badge">Templar Studios</span>
+    </header>
+
+    <section class="hero">
+        <div class="hero-raven">
+            <svg viewBox="0 0 24 24" fill="none">
+                <path d="M4 15 L10 6 L16 6 L22 15 L15 11 L11 11 L8 15 Z" fill="url(#ravenGradient)"/>
+            </svg>
+        </div>
+        <h1>Raven</h1>
+        <p>Advanced OSINT Framework. Run in browser or download for full functionality.</p>
+        <div class="hero-cta">
+            <a href="#web-version" class="btn-primary">Run in Browser</a>
+            <a href="#downloads" class="btn-secondary">Download</a>
+        </div>
+        <div class="hero-divider"></div>
+    </section>
+
+    <div class="container">
+
+        <div class="section" id="web-version">
+            <h2>Web Edition</h2>
+            <div class="section-divider"></div>
+            <p>Browser-capable tools. For full platform search and port scanning, use the desktop versions below.</p>
+
+            <div class="tool-tabs">
+                <button class="tool-tab active" onclick="switchTool('email')">Email Breach</button>
+                <button class="tool-tab" onclick="switchTool('ip')">IP Lookup</button>
+                <button class="tool-tab" onclick="switchTool('hash')">Hash</button>
+                <button class="tool-tab" onclick="switchTool('phone')">Phone</button>
+                <button class="tool-tab" onclick="switchTool('metadata')">Metadata</button>
+            </div>
+
+            <!-- Email Breach -->
+            <div id="tool-email" class="tool-panel active">
+                <h3>Email Breach Check</h3>
+                <p>Check if an email has appeared in known breaches.</p>
+                <input type="text" id="email-input" placeholder="email@example.com">
+                <button class="btn-primary" onclick="checkEmail()" style="margin-top:0.5rem;">Check</button>
+                <div id="email-output" class="output empty">Result here</div>
+            </div>
+
+            <!-- IP Lookup -->
+            <div id="tool-ip" class="tool-panel">
+                <h3>IP Geolocation</h3>
+                <p>Get location data for an IP address.</p>
+                <input type="text" id="ip-input" placeholder="8.8.8.8">
+                <button class="btn-primary" onclick="lookupIP()" style="margin-top:0.5rem;">Lookup</button>
+                <div id="ip-output" class="output empty">Result here</div>
+            </div>
+
+            <!-- Hash -->
+            <div id="tool-hash" class="tool-panel">
+                <h3>Hash Generator</h3>
+                <p>Generate SHA-256, SHA-1, and MD5 hashes.</p>
+                <textarea id="hash-input" rows="3" placeholder="Enter text..."></textarea>
+                <button class="btn-primary" onclick="generateHash()" style="margin-top:0.5rem;">Generate</button>
+                <div id="hash-output" class="output empty">Hashes here</div>
+            </div>
+
+            <!-- Phone -->
+            <div id="tool-phone" class="tool-panel">
+                <h3>Phone Analysis</h3>
+                <p>Validate and analyze phone number format.</p>
+                <input type="text" id="phone-input" placeholder="+1 555 123 4567">
+                <button class="btn-primary" onclick="analyzePhone()" style="margin-top:0.5rem;">Analyze</button>
+                <div id="phone-output" class="output empty">Result here</div>
+            </div>
+
+            <!-- Metadata -->
+            <div id="tool-metadata" class="tool-panel">
+                <h3>Metadata Extractor</h3>
+                <p>Upload a file to extract hashes and strings.</p>
+                <input type="file" id="metadata-file">
+                <button class="btn-primary" onclick="extractFileMetadata()" style="margin-top:0.5rem;">Extract</button>
+                <div id="metadata-output" class="output empty">Result here</div>
+            </div>
+        </div>
+
+        <div class="section" id="downloads">
+            <h2>Download Full Versions</h2>
+            <div class="section-divider"></div>
+            <p>Get the complete Raven with username search across 50+ platforms, port scanning, domain intelligence, and more.</p>
+            <div class="download-cards">
+                <div class="download-card">
+                    <h3>Python Version</h3>
+                    <p>Desktop GUI and CLI. Requires Python 3.8+.</p>
+                    <a href="/downloads/raven.py" class="btn-primary" download>Download raven.py</a>
+                </div>
+                <div class="download-card">
+                    <h3>Node.js Version</h3>
+                    <p>CLI tool. Requires Node.js 18+.</p>
+                    <a href="/downloads/raven.js" class="btn-primary" download>Download raven.js</a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <footer class="footer">
+        <p>Raven — Advanced OSINT Framework</p>
+        <p style="margin-top:0.4rem;">A <a href="#">Templar Studios</a> project. GPL v3.0.</p>
+    </footer>
+
+    <script>
+        function switchTool(name) {
+            document.querySelectorAll('.tool-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tool-panel').forEach(p => p.classList.remove('active'));
+            event.target.classList.add('active');
+            document.getElementById('tool-' + name).classList.add('active');
+        }
+
+        async function checkEmail() {
+            const email = document.getElementById('email-input').value.trim().toLowerCase();
+            if (!email || !email.includes('@')) return;
+            
+            const hash = await sha1Hash(email);
+            const prefix = hash.slice(0, 5);
+            const suffix = hash.slice(5);
+            
+            try {
+                const resp = await fetch(`https://api.pwnedpasswords.com/range/${prefix}`);
+                const text = await resp.text();
+                let breached = false;
+                let count = 0;
+                
+                for (const line of text.split('\n')) {
+                    if (line.includes(':')) {
+                        const [h, c] = line.split(':');
+                        if (h === suffix) {
+                            breached = true;
+                            count = parseInt(c);
+                            break;
+                        }
+                    }
+                }
+                
+                const out = document.getElementById('email-output');
+                if (breached) {
+                    out.textContent = `⚠️ BREACHED — ${count} breaches found`;
+                } else {
+                    out.textContent = '✅ No known breaches';
+                }
+                out.className = 'output';
+            } catch {
+                document.getElementById('email-output').textContent = 'Error checking email';
+            }
+        }
+
+        async function sha1Hash(str) {
+            const data = new TextEncoder().encode(str);
+            const buffer = await crypto.subtle.digest('SHA-1', data);
+            return Array.from(new Uint8Array(buffer)).map(b => b.toString(16).padStart(2, '0')).join('').toUpperCase();
+        }
+
+        async function lookupIP() {
+            const ip = document.getElementById('ip-input').value.trim();
+            if (!ip) return;
+            
+            try {
+                const resp = await fetch(`http://ip-api.com/json/${ip}`);
+                const data = await resp.json();
+                const out = document.getElementById('ip-output');
+                if (data.status === 'success') {
+                    out.textContent = `Country: ${data.country}\nRegion: ${data.regionName}\nCity: ${data.city}\nISP: ${data.isp}\nTimezone: ${data.timezone}\nLat/Lon: ${data.lat}, ${data.lon}`;
+                } else {
+                    out.textContent = 'Could not geolocate IP';
+                }
+                out.className = 'output';
+            } catch {
+                document.getElementById('ip-output').textContent = 'Error looking up IP';
+            }
+        }
+
+        async function generateHash() {
+            const text = document.getElementById('hash-input').value;
+            if (!text) return;
+            
+            const data = new TextEncoder().encode(text);
+            const results = [];
+            
+            const sha256Buffer = await crypto.subtle.digest('SHA-256', data);
+            results.push('SHA-256: ' + Array.from(new Uint8Array(sha256Buffer)).map(b => b.toString(16).padStart(2, '0')).join(''));
+            
+            const sha1Buffer = await crypto.subtle.digest('SHA-1', data);
+            results.push('SHA-1: ' + Array.from(new Uint8Array(sha1Buffer)).map(b => b.toString(16).padStart(2, '0')).join(''));
+            
+            let hash = 0;
+            for (let i = 0; i < text.length; i++) {
+                hash = ((hash << 5) - hash) + text.charCodeAt(i);
+                hash = hash & hash;
+            }
+            results.push('MD5: ' + Math.abs(hash).toString(16).padStart(32, '0'));
+            
+            document.getElementById('hash-output').textContent = results.join('\n\n');
+            document.getElementById('hash-output').className = 'output';
+        }
+
+        function analyzePhone() {
+            const phone = document.getElementById('phone-input').value.trim();
+            if (!phone) return;
+            
+            const cleaned = phone.replace(/[^\d+]/g, '');
+            const result = {
+                original: phone,
+                cleaned: cleaned,
+                length: cleaned.replace('+', '').length,
+                country_code: cleaned.startsWith('+') ? cleaned.slice(0, 3) : 'Unknown',
+                valid_format: /^\+?[\d\s-]{7,15}$/.test(phone)
+            };
+            
+            document.getElementById('phone-output').textContent = JSON.stringify(result, null, 2);
+            document.getElementById('phone-output').className = 'output';
+        }
+
+        async function extractFileMetadata() {
+            const fileInput = document.getElementById('metadata-file');
+            const file = fileInput.files[0];
+            if (!file) return;
+            
+            const metadata = {
+                filename: file.name,
+                size: file.size + ' bytes',
+                type: file.type,
+                lastModified: new Date(file.lastModified).toISOString()
+            };
+            
+            const buffer = await file.arrayBuffer();
+            const bytes = new Uint8Array(buffer);
+            
+            // SHA-256
+            const sha256Buffer = await crypto.subtle.digest('SHA-256', buffer);
+            metadata.sha256 = Array.from(new Uint8Array(sha256Buffer)).map(b => b.toString(16).padStart(2, '0')).join('');
+            
+            // Extract strings
+            const text = new TextDecoder().decode(bytes);
+            const strings = text.match(/[\x20-\x7e]{4,}/g) || [];
+            metadata.interesting_strings = strings.filter(s => /http|www|@|password|user|key|token|secret|api/i.test(s)).slice(0, 20);
+            
+            document.getElementById('metadata-output').textContent = JSON.stringify(metadata, null, 2);
+            document.getElementById('metadata-output').className = 'output';
+        }
+    </script>
+
+</body>
+</html>
